@@ -19,7 +19,7 @@ searchkeywords - Search for comics by keyword. Returns suggestions: /searchkeywo
 comic - Get all the pages of specified comic. Name must be an exact match: /comic <name>
 """
 
-bot = telebot.TeleBot('6052491575:AAEY9irHmRGu1KtdYAEKB-USplKi5dNh2-A')
+bot = telebot.TeleBot('0123456789:REPLACE-WITH-YOUR-TOKEN-HERE')
 
 from telebot.types import InputMediaPhoto
 
