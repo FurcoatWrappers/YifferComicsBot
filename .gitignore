@@ -1,3 +1,6 @@
+# Project Files
+src/yiffer/query_editor.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
