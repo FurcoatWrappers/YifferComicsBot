@@ -1,0 +1,3 @@
+from .yiffer import (
+    ComicData,
+)
