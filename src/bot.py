@@ -1,29 +1,38 @@
 import telebot
 from telebot import types
+
 import yiffer
+
 from typing import List
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 """
 Commands:
+
 start - Begin a conversation with the bot. /start
 help - Get a list of commands. /help
-
 comics - Browse comics by page number: /comics <page_number>
-
 search - Search for comics by name. Returns suggestions: /search <name>
-
-keywords - Get the keywords for a specific comic: /keywords <name>
-
+keywords - Get the keywords: /keywords
 searchkeywords - Search for comics by keyword. Returns suggestions: /searchkeywords <keyword>
-
 comic - Get all the pages of specified comic. Name must be an exact match: /comic <name>
 """
 
-bot = telebot.TeleBot('0123456789:REPLACE-WITH-YOUR-TOKEN-HERE')
+
+
+token = os.getenv("BOT_TOKEN")
+if not token:
+    print("Bot token is not defined. Please make a .env file with BOT_TOKEN=\"0123456789:YOUR_TOKEN_HERE\" (YifferComicsBot/src/.env)")
+    quit()
+
+bot = telebot.TeleBot(token)
 
 from telebot.types import InputMediaPhoto
 
-def send_comic_query_to_chat(chat_id, comics: List[yiffer.ComicData]):
+def send_comic_query_to_chat(chat_id, comics: List[yiffer.ComicData]) -> None:
     # Send all the thumbnails as a media group.
     # Add the name, artist, page count, state, and tags to the caption.
     media = []
@@ -39,7 +48,7 @@ def send_comic_query_to_chat(chat_id, comics: List[yiffer.ComicData]):
     
     bot.send_message(chat_id, "Select a comic to view:", reply_markup=keyboard)
 
-def send_comic_to_chat(chat_id, comic_name: str):
+def send_comic_to_chat(chat_id, comic_name: str) -> None:
     comic = yiffer.ComicData.load_from_db(comic_name)
     if comic is None:
         bot.send_message(chat_id, "Comic not found.")
@@ -109,7 +118,14 @@ def cmd_search(message):
     bot.send_message(message.chat.id, f"Search results for '{query}':")
     send_comic_query_to_chat(message.chat.id, comics)
     
-
+@bot.message_handler(commands=['keywords'])
+def cmd_keywords(message):
+    keywords_query = yiffer.ComicData.get_keywords_by_count() # [(str, int), (str, int), ...]
+    # Paginate the keywords.
+    # Send 10 at a time. 
+    # Add buttons to go left and right through the keywords.
+    
+    
 
 
 bot.infinity_polling()

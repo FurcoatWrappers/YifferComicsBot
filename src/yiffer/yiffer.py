@@ -63,16 +63,19 @@ def create_database():
                  (comic_name TEXT,
                   page_number INTEGER,
                   page_url TEXT,
+                  UNIQUE(comic_name, page_number),
                   FOREIGN KEY (comic_name) REFERENCES comics(name))""")
 
     # Create keywords table
     c.execute("""CREATE TABLE keywords
                  (comic_id INTEGER,
                   keyword TEXT,
+                  UNIQUE(comic_id, keyword),
                   FOREIGN KEY (comic_id) REFERENCES comics(id))""")
 
     conn.commit()
     conn.close()
+
 
 
 @dataclass
@@ -126,13 +129,13 @@ class ComicData:
         c = conn.cursor()
 
         # Save comic details to the comics table
-        c.execute("""INSERT INTO comics (id, name, thumbnail, category, tag, artist, state, created, updated, userRating)
+        c.execute("""INSERT OR REPLACE INTO comics (id, name, thumbnail, category, tag, artist, state, created, updated, userRating)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (self.id, self.name, self.thumbnail, self.category, self.tag, self.artist, self.state, self.created, self.updated, self.userRating))
 
         # Save pages to the pages table
         for i, page_url in enumerate(self.pages, 1):
-            c.execute("INSERT INTO pages (comic_name, page_number, page_url) VALUES (?, ?, ?)", (self.name, i, page_url))
+            c.execute("INSERT OR IGNORE INTO pages (comic_name, page_number, page_url) VALUES (?, ?, ?)", (self.name, i, page_url))
 
         # Save keywords to the keywords table
         for keyword in self.keywords:
@@ -140,6 +143,7 @@ class ComicData:
 
         conn.commit()
         conn.close()
+
 
     @classmethod
     def from_basic_and_detailed(cls, basic: BasicComicData, detailed: DetailedComicData):
@@ -339,6 +343,26 @@ class ComicData:
         conn.close()
 
         return round((number_of_comics - 1) / 10)
+    
+    @staticmethod
+    def get_keywords_by_count() -> List[str]:
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        # Save comic details to the comics table
+        c.execute("""SELECT keyword, COUNT(*) as count
+                    FROM keywords
+                    GROUP BY keyword
+                    ORDER BY count DESC;""")
+        
+        results = c.fetchall()
+        print(results)
+
+
+        conn.commit()
+        conn.close()
+
+        return results
 
 def update_db():
     start = time.perf_counter()
